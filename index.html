@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Citas 1-a-1 | Monat & Freedom Insurance Financial</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      #printableArea, #printableArea * { visibility: visible; }
+      #printableArea { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; }
+      .no-print { display: none !important; }
+    }
+    .slot-selected {
+      background-color: #1e3a8a !important;
+      color: #ffffff !important;
+      border-color: #1e3a8a !important;
+      transform: scale(1.03);
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+    }
+    .slot-selected span {
+      color: #93c5fd !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen py-6 px-4">
+
+  <!-- BARRA SUPERIOR -->
+  <div class="max-w-4xl mx-auto mb-4 flex flex-wrap justify-between items-center gap-2 bg-white px-4 py-2.5 rounded-xl shadow-sm border border-slate-200 no-print">
+    <div class="flex items-center space-x-2">
+      <span id="syncDot" class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
+      <span id="syncStatusText" class="text-xs font-semibold text-slate-600">Agenda en Vivo (9:00 AM – 2:20 PM)</span>
+    </div>
+    <div class="flex space-x-2">
+      <button type="button" onclick="refreshFromCloud()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+        🔄 Actualizar Cupos
+      </button>
+      <button type="button" onclick="switchView('client')" id="btnClientView" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-900 text-white transition">
+        Vista Empleado (Monat)
+      </button>
+      <button type="button" onclick="switchView('admin')" id="btnAdminView" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition flex items-center gap-1">
+        🔒 Acceso Admin (Yenniree) <span id="badgeCount" class="bg-emerald-600 text-white px-1.5 py-0.2 rounded-full text-[10px]">0</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- VISTA 1: EMPLEADOS DE MONAT -->
+  <div id="clientView" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+    
+    <!-- ENCABEZADO CON LOGOS TRANSPARENTES EN SVG -->
+    <div class="bg-gradient-to-b from-white to-slate-50 p-6 border-b border-slate-200 text-center">
+      <div class="flex flex-col items-center justify-center mb-4">
+        <!-- Logo MONAT[cite: 2] -->
+        <svg class="h-14 w-auto mb-1" viewBox="0 0 240 95" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="120" cy="34" r="28" stroke="#1E73BE" stroke-width="5.5"/>
+          <path d="M120 12C110 22 103 31 103 40C103 49.5 110.5 56 120 56C129.5 56 137 49.5 137 40C137 31 130 22 120 12Z" stroke="#1E73BE" stroke-width="5.5" stroke-linejoin="round"/>
+          <text x="120" y="86" text-anchor="middle" fill="#1E73BE" font-family="Arial, sans-serif" font-weight="bold" font-size="22" letter-spacing="10">MONAT</text>
+          <text x="206" y="75" fill="#1E73BE" font-family="Arial, sans-serif" font-size="10" font-weight="bold">®</text>
+        </svg>
+        <span class="bg-blue-900 text-white text-[11px] font-bold px-3.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+          Jornada Exclusiva de Beneficios Financieros
+        </span>
+      </div>
+
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Reserva tu Sesión Privada 1-a-1 (20 Min)</h1>
+      <p class="text-slate-600 text-sm mt-1 max-w-xl mx-auto">
+        Descubre cómo crear tu propio banco libre de impuestos (Código 7702 del IRS) y proteger a tu familia con Beneficios en Vida.
+      </p>
+
+      <div class="mt-5 pt-4 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-8">
+        <!-- Logo Freedom Insurance Financial[cite: 1] -->
+        <svg class="h-10 w-auto" viewBox="0 0 430 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="8" width="195" height="44" rx="4" fill="#0B72B9"/>
+          <text x="97" y="40" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="bold" font-size="34">freedom</text>
+          <text x="205" y="40" fill="#0B72B9" font-family="Arial, sans-serif" font-weight="bold" font-size="34">insurance</text>
+          <line x1="205" y1="50" x2="420" y2="50" stroke="#28A745" stroke-width="3"/>
+          <text x="312" y="68" text-anchor="middle" fill="#28A745" font-family="Arial, sans-serif" font-weight="bold" font-size="16" letter-spacing="7">FINANCIAL</text>
+        </svg>
+
+        <div class="h-8 w-px bg-slate-300 hidden sm:block"></div>
+
+        <!-- Logo Gotera Insurance[cite: 3] -->
+        <svg class="h-10 w-auto" viewBox="0 0 260 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M52 20 A26 26 0 1 0 38 64" stroke="#428BCA" stroke-width="10" stroke-linecap="round"/>
+          <path d="M38 38 H66 V64" stroke="#428BCA" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M44 58 L65 39" stroke="#428BCA" stroke-width="9" stroke-linecap="round"/>
+          <circle cx="82" cy="18" r="8" fill="#428BCA"/>
+          <text x="80" y="44" fill="#0F2537" font-family="Arial, sans-serif" font-weight="bold" font-size="25">Gotera</text>
+          <text x="80" y="66" fill="#0F2537" font-family="Arial, sans-serif" font-weight="bold" font-size="24">Insurance</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- PILARES DE VALOR -->
+    <div class="p-5 bg-blue-50/60 border-b border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+      <div class="bg-white p-3.5 rounded-xl border border-blue-100 shadow-sm">
+        <strong class="text-blue-900 text-sm block mb-1">🛡️ Beneficios en Vida</strong>
+        Protección familiar que te adelanta el seguro en vida en caso de enfermedad crónica, crítica o terminal.
+      </div>
+      <div class="bg-white p-3.5 rounded-xl border border-blue-100 shadow-sm">
+        <strong class="text-blue-900 text-sm block mb-1">📈 Código 7702 del IRS</strong>
+        Acumulación con interés compuesto 100% libre de impuestos y sin penalidades para tu retiro o metas.
+      </div>
+      <div class="bg-white p-3.5 rounded-xl border border-blue-100 shadow-sm">
+        <strong class="text-blue-900 text-sm block mb-1">🏦 Tu Propio Banco Flexible</strong>
+        Úsalo para la universidad de tus hijos, saldar tu casa más rápido, remodelaciones o vacaciones.
+      </div>
+    </div>
+
+    <!-- FORMULARIO -->
+    <form id="bookingForm" class="p-6 space-y-6" onsubmit="registerAppointment(event)">
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-blue-900 mb-3 flex items-center gap-2">
+          <span class="bg-blue-900 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[11px]">1</span>
+          Tus Datos de Contacto
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre y Apellido *</label>
+            <input type="text" id="clientName" required placeholder="Ej. Carolina Gómez" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-700 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Teléfono Celular *</label>
+            <input type="tel" id="clientPhone" required placeholder="(407) 000-0000" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-700 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Correo Electrónico *</label>
+            <input type="email" id="clientEmail" required placeholder="tuemail@monat.com" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-700 text-sm">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-blue-900 mb-2 flex items-center gap-2">
+          <span class="bg-blue-900 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[11px]">2</span>
+          ¿Qué te gustaría lograr con tu estrategia IUL?
+        </h3>
+        <select id="clientGoal" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-700 text-sm bg-white font-medium text-slate-700">
+          <option value="Crear mi Propio Banco y Retiro Libre de Impuestos (IRS 7702)">🏦 Crear mi Propio Banco y Retiro Libre de Impuestos (Código 7702)</option>
+          <option value="Protección Familiar + Beneficios en Vida (Enfermedad Crónica/Crítica)">🛡️ Protección Familiar + Beneficios en Vida</option>
+          <option value="Fondo para Universidad de los Niños o Pagar Casa Rápido">🎓 Ahorrar para Universidad de los Niños / Pagar la Casa más Rápido</option>
+          <option value="Conocer todos los beneficios y flexibilidad del plan">✨ Conocer todos los beneficios (Aumentar, maximizar y retirar sin penalidad)</option>
+        </select>
+      </div>
+
+      <div>
+        <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-2">
+            <span class="bg-blue-900 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[11px]">3</span>
+            Selecciona tu Horario de 20 Minutos (9:00 AM - 2:20 PM) *
+          </h3>
+          <span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-semibold">
+            3 Asesores Disponibles por Horario
+          </span>
+        </div>
+
+        <div id="slotsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5"></div>
+
+        <div id="selectedSlotBanner" class="hidden mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between text-xs text-blue-900 font-semibold">
+          <span id="selectedSlotText">Horario seleccionado: --</span>
+          <span class="text-emerald-700 font-bold">✓ Listo para registrar</span>
+        </div>
+
+        <p id="slotError" class="hidden mt-2 text-xs text-red-600 font-bold bg-red-50 p-2.5 rounded-lg border border-red-200">
+          ⚠️ Por favor haz clic en uno de los horarios disponibles arriba antes de confirmar.
+        </p>
+      </div>
+
+      <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-blue-900 to-emerald-700 hover:from-blue-950 hover:to-emerald-800 text-white font-bold py-4 rounded-xl shadow-lg transition duration-200 text-base cursor-pointer">
+        Confirmar mi Cita y Recibir Confirmación por Email
+      </button>
+    </form>
+
+    <!-- PANTALLA DE CONFIRMACIÓN -->
+    <div id="confirmationScreen" class="hidden p-8 text-center space-y-5">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto text-3xl font-bold shadow-inner">
+        ✓
+      </div>
+      <div class="space-y-1">
+        <span class="text-xs font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">Reserva Confirmada</span>
+        <h2 class="text-2xl font-extrabold text-slate-900 mt-2">¡Tu cita ha sido registrada con éxito!</h2>
+      </div>
+
+      <div id="confirmationCard" class="max-w-md mx-auto bg-slate-50 p-5 rounded-2xl border border-slate-200 text-left text-sm space-y-2 shadow-sm"></div>
+
+      <div class="max-w-md mx-auto p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 space-y-2">
+        <p class="font-bold">📧 Hemos enviado los detalles a tu correo y a ymedina@gofreedomif.com.</p>
+      </div>
+
+      <div class="pt-3">
+        <button type="button" onclick="resetFormForNextClient()" class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs transition">
+          ← Registrar otra cita (Volver al calendario)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISTA 2: PORTAL ADMINISTRATIVO PRIVADO (YMEDINA@GOFREEDOMIF.COM) -->
+  <div id="adminView" class="hidden max-w-5xl mx-auto space-y-4">
+    <div id="adminLoginBox" class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center space-y-4 no-print">
+      <div class="w-12 h-12 bg-blue-50 text-blue-900 rounded-full flex items-center justify-center mx-auto text-xl font-bold">🔒</div>
+      <h2 class="text-lg font-extrabold text-slate-900">Portal Administrativo de Citas</h2>
+      <p class="text-xs text-slate-500">Acceso exclusivo para <strong>ymedina@gofreedomif.com</strong></p>
+      <div class="flex gap-2">
+        <input type="password" id="adminPin" placeholder="Ingresa PIN (Usa: 2026)" value="2026" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-center font-bold">
+        <button type="button" onclick="unlockAdmin()" class="bg-blue-900 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-blue-800">Entrar</button>
+      </div>
+    </div>
+
+    <div id="adminDashboardContent" class="hidden bg-white rounded-2xl shadow-xl border border-slate-200 p-6">
+      
+      <!-- Conector Google Sheets en Vivo -->
+      <div class="mb-5 p-4 bg-slate-50 rounded-xl border border-slate-200 no-print">
+        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">🔗 URL de Conexión Google Sheets (Apps Script Web App):</label>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs">
+          <button type="button" onclick="saveScriptUrl()" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-blue-800">
+            Guardar y Sincronizar
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-1">Pega aquí la URL que te dio Google Apps Script al implementar tu aplicación web.</p>
+      </div>
+
+      <div id="printableArea">
+        <div class="flex flex-wrap justify-between items-start gap-4 pb-5 border-b border-slate-200">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">Reporte Oficial Sincronizado</span>
+            <h2 class="text-2xl font-extrabold text-slate-900 mt-1">Control de Citas — Empleados MONAT</h2>
+            <p class="text-xs text-slate-500">Administrador: <strong>Yenniree Medina (ymedina@gofreedomif.com)</strong> | Horario: 9:00 AM – 2:20 PM</p>
+          </div>
+
+          <div class="flex flex-wrap gap-2 no-print">
+            <button type="button" onclick="refreshFromCloud()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition">
+              🔄 Sincronizar Ahora
+            </button>
+            <button type="button" onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition">
+              📥 Descargar Excel (CSV)
+            </button>
+            <button type="button" onclick="window.print()" class="bg-blue-900 hover:bg-blue-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition">
+              🖨️ Imprimir Reporte / PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-5">
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <span class="text-[11px] text-slate-500 font-semibold uppercase">Total Agendados</span>
+            <p id="statTotal" class="text-2xl font-extrabold text-blue-900 mt-0.5">0 / 48</p>
+          </div>
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <span class="text-[11px] text-slate-500 font-semibold uppercase">Mesa 1 (Yenniree)</span>
+            <p id="statA1" class="text-2xl font-extrabold text-emerald-700 mt-0.5">0 citas</p>
+          </div>
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <span class="text-[11px] text-slate-500 font-semibold uppercase">Mesa 2 (Freedom/Gotera)</span>
+            <p id="statA2" class="text-2xl font-extrabold text-blue-700 mt-0.5">0 citas</p>
+          </div>
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+            <span class="text-[11px] text-slate-500 font-semibold uppercase">Mesa 3 (Freedom/Gotera)</span>
+            <p id="statA3" class="text-2xl font-extrabold text-indigo-700 mt-0.5">0 citas</p>
+          </div>
+        </div>
+
+        <div class="mb-4 flex flex-wrap justify-between items-center gap-2 no-print">
+          <input type="text" id="searchFilter" oninput="renderAdminTable()" placeholder="🔍 Buscar por nombre, hora, correo o asesor..." class="w-full sm:w-80 px-3.5 py-2 border border-slate-300 rounded-xl text-xs">
+          <span class="text-xs text-slate-500">Notificaciones automáticas a: <strong>ymedina@gofreedomif.com</strong></span>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 border-b border-slate-200 uppercase text-[11px]">
+                <th class="py-3 px-3">Hora (20 min)</th>
+                <th class="py-3 px-3">Asesor Asignado</th>
+                <th class="py-3 px-3">Empleado Monat</th>
+                <th class="py-3 px-3">Teléfono</th>
+                <th class="py-3 px-3">Email</th>
+                <th class="py-3 px-3">Prioridad IUL</th>
+                <th class="py-3 px-3 no-print text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="adminTableBody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // PEGA AQUÍ LA URL DE TU GOOGLE APPS SCRIPT SI DESEAS DEJARLA FIJA (Opcional)
+    // =========================================================================
+    const DEFAULT_GOOGLE_SCRIPT_URL = ""; 
+
+    const TIME_SLOTS = [
+      { start: "9:00 AM", end: "9:20 AM" },
+      { start: "9:20 AM", end: "9:40 AM" },
+      { start: "9:40 AM", end: "10:00 AM" },
+      { start: "10:00 AM", end: "10:20 AM" },
+      { start: "10:20 AM", end: "10:40 AM" },
+      { start: "10:40 AM", end: "11:00 AM" },
+      { start: "11:00 AM", end: "11:20 AM" },
+      { start: "11:20 AM", end: "11:40 AM" },
+      { start: "11:40 AM", end: "12:00 PM" },
+      { start: "12:00 PM", end: "12:20 PM" },
+      { start: "12:20 PM", end: "12:40 PM" },
+      { start: "12:40 PM", end: "1:00 PM" },
+      { start: "1:00 PM", end: "1:20 PM" },
+      { start: "1:20 PM", end: "1:40 PM" },
+      { start: "1:40 PM", end: "2:00 PM" },
+      { start: "2:00 PM", end: "2:20 PM" }
+    ];
+
+    const ADVISORS = [
+      "Mesa 1 - Yenniree Medina",
+      "Mesa 2 - Asesor Freedom / Gotera",
+      "Mesa 3 - Asesor Freedom / Gotera"
+    ];
+
+    const ADMIN_EMAIL = "ymedina@gofreedomif.com";
+    const STORAGE_KEY = "monat_freedom_appointments_v2";
+    const SCRIPT_URL_KEY = "monat_freedom_script_url";
+    let currentSelectedSlot = null;
+
+    function getScriptUrl() {
+      return localStorage.getItem(SCRIPT_URL_KEY) || DEFAULT_GOOGLE_SCRIPT_URL;
+    }
+
+    function saveScriptUrl() {
+      const val = document.getElementById("scriptUrlInput").value.trim();
+      localStorage.setItem(SCRIPT_URL_KEY, val);
+      refreshFromCloud();
+      alert("URL guardada y sincronizada.");
+    }
+
+    function getAppointments() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveAppointments(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      document.getElementById("badgeCount").textContent = list.length;
+    }
+
+    async function refreshFromCloud() {
+      const url = getScriptUrl();
+      if (!url) {
+        renderSlots();
+        return;
+      }
+      try {
+        document.getElementById("syncStatusText").textContent = "Sincronizando cupos en vivo...";
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data && data.appointments) {
+          saveAppointments(data.appointments);
+          renderSlots();
+          renderAdminTable();
+          document.getElementById("syncStatusText").textContent = "Sincronizado en vivo con Google Sheets";
+        }
+      } catch (err) {
+        document.getElementById("syncStatusText").textContent = "Agenda activa (Modo Local / Respaldo)";
+        renderSlots();
+      }
+    }
+
+    function renderSlots() {
+      const grid = document.getElementById("slotsGrid");
+      grid.innerHTML = "";
+      const appointments = getAppointments();
+
+      TIME_SLOTS.forEach(slot => {
+        const label = `${slot.start} - ${slot.end}`;
+        const bookedInSlot = appointments.filter(a => a.timeSlot === label).length;
+        const available = 3 - bookedInSlot;
+        const isFull = available <= 0;
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+
+        if (isFull) {
+          btn.disabled = true;
+          btn.className = "py-2.5 px-2 rounded-xl border border-slate-200 bg-slate-100 text-slate-400 text-xs font-semibold flex flex-col items-center cursor-not-allowed";
+          btn.innerHTML = `<span>${slot.start} - ${slot.end}</span><span class="text-[10px] text-red-400 font-bold mt-0.5">Agotado (0 cupos)</span>`;
+        } else {
+          const isSelected = currentSelectedSlot === label;
+          btn.className = `py-2.5 px-2 rounded-xl border border-slate-300 bg-white hover:border-blue-800 hover:bg-blue-50/50 transition flex flex-col items-center cursor-pointer ${isSelected ? 'slot-selected' : ''}`;
+          btn.innerHTML = `
+            <span class="text-xs font-bold text-slate-800">${slot.start} - ${slot.end}</span>
+            <span class="text-[10px] text-emerald-600 font-semibold mt-0.5">${available} ${available === 1 ? 'asesor libre' : 'asesores libres'}</span>
+          `;
+          btn.addEventListener("click", () => selectSlot(label));
+        }
+        grid.appendChild(btn);
+      });
+    }
+
+    function selectSlot(label) {
+      currentSelectedSlot = label;
+      document.getElementById("slotError").classList.add("hidden");
+      document.getElementById("selectedSlotBanner").classList.remove("hidden");
+      document.getElementById("selectedSlotText").textContent = `Horario seleccionado: ${label}`;
+      renderSlots();
+    }
+
+    async function registerAppointment(event) {
+      event.preventDefault();
+      if (!currentSelectedSlot) {
+        document.getElementById("slotError").classList.remove("hidden");
+        return;
+      }
+
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Registrando tu cita y enviando confirmación...";
+
+      const name = document.getElementById("clientName").value.trim();
+      const phone = document.getElementById("clientPhone").value.trim();
+      const email = document.getElementById("clientEmail").value.trim();
+      const goal = document.getElementById("clientGoal").value;
+
+      const scriptUrl = getScriptUrl();
+      let finalRecord = null;
+
+      if (scriptUrl) {
+        try {
+          const response = await fetch(scriptUrl, {
+            method: "POST",
+            body: JSON.stringify({ name, phone, email, goal, timeSlot: currentSelectedSlot })
+          });
+          const result = await response.json();
+          if (result.status === "full") {
+            alert("Este horario acaba de llenarse hace unos segundos. Por favor selecciona otro bloque.");
+            currentSelectedSlot = null;
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Confirmar mi Cita y Recibir Confirmación por Email";
+            await refreshFromCloud();
+            return;
+          }
+          if (result.status === "ok") {
+            finalRecord = result.record;
+            await refreshFromCloud();
+          }
+        } catch (e) {}
+      }
+
+      if (!finalRecord) {
+        const appointments = getAppointments();
+        const bookedInSlot = appointments.filter(a => a.timeSlot === currentSelectedSlot);
+        if (bookedInSlot.length >= 3) {
+          alert("Este horario acaba de llenarse. Por favor elige otro bloque.");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Confirmar mi Cita y Recibir Confirmación por Email";
+          return;
+        }
+        const usedAdvisors = bookedInSlot.map(a => a.advisor);
+        const assignedAdvisor = ADVISORS.find(adv => !usedAdvisors.includes(adv)) || ADVISORS[0];
+
+        finalRecord = {
+          id: "MONAT-" + Date.now().toString().slice(-5),
+          name, phone, email, goal,
+          timeSlot: currentSelectedSlot,
+          advisor: assignedAdvisor,
+          createdAt: new Date().toLocaleString("es-US")
+        };
+        appointments.push(finalRecord);
+        saveAppointments(appointments);
+
+        try {
+          fetch(`https://formsubmit.co/ajax/${ADMIN_EMAIL}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({
+              _subject: `Nueva Cita Monat: ${finalRecord.name} (${finalRecord.timeSlot})`,
+              _cc: finalRecord.email,
+              Codigo: finalRecord.id,
+              Empleado: finalRecord.name,
+              Telefono: finalRecord.phone,
+              Email_Empleado: finalRecord.email,
+              Horario_20_Min: finalRecord.timeSlot,
+              Asesor_Asignado: finalRecord.advisor,
+              Objetivo_IUL: finalRecord.goal
+            })
+          });
+        } catch (err) {}
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Confirmar mi Cita y Recibir Confirmación por Email";
+
+      document.getElementById("bookingForm").classList.add("hidden");
+      document.getElementById("confirmationScreen").classList.remove("hidden");
+
+      document.getElementById("confirmationCard").innerHTML = `
+        <div class="flex justify-between border-b border-slate-200 pb-2">
+          <span class="text-slate-500">Código de Reserva:</span>
+          <strong class="text-blue-900">${finalRecord.id}</strong>
+        </div>
+        <div class="flex justify-between border-b border-slate-200 pb-2">
+          <span class="text-slate-500">Empleado:</span>
+          <strong>${finalRecord.name}</strong>
+        </div>
+        <div class="flex justify-between border-b border-slate-200 pb-2">
+          <span class="text-slate-500">Horario (20 min):</span>
+          <strong class="text-emerald-700">${finalRecord.timeSlot}</strong>
+        </div>
+        <div class="flex justify-between border-b border-slate-200 pb-2">
+          <span class="text-slate-500">Asesor Asignado:</span>
+          <strong>${finalRecord.advisor}</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 block">Enfoque IUL:</span>
+          <strong class="text-slate-800">${finalRecord.goal}</strong>
+        </div>
+      `;
+    }
+
+    function resetFormForNextClient() {
+      document.getElementById("bookingForm").reset();
+      currentSelectedSlot = null;
+      document.getElementById("selectedSlotBanner").classList.add("hidden");
+      document.getElementById("confirmationScreen").classList.add("hidden");
+      document.getElementById("bookingForm").classList.remove("hidden");
+      refreshFromCloud();
+    }
+
+    function switchView(view) {
+      const clientView = document.getElementById("clientView");
+      const adminView = document.getElementById("adminView");
+      const btnClient = document.getElementById("btnClientView");
+      const btnAdmin = document.getElementById("btnAdminView");
+
+      if (view === "admin") {
+        clientView.classList.add("hidden");
+        adminView.classList.remove("hidden");
+        btnAdmin.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-900 text-white transition flex items-center gap-1";
+        btnClient.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+        document.getElementById("scriptUrlInput").value = getScriptUrl();
+        renderAdminTable();
+      } else {
+        adminView.classList.add("hidden");
+        clientView.classList.remove("hidden");
+        btnClient.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-900 text-white transition";
+        btnAdmin.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition flex items-center gap-1";
+        renderSlots();
+      }
+    }
+
+    function unlockAdmin() {
+      const pin = document.getElementById("adminPin").value.trim();
+      if (pin === "2026" || pin.toLowerCase() === "freedom") {
+        document.getElementById("adminLoginBox").classList.add("hidden");
+        document.getElementById("adminDashboardContent").classList.remove("hidden");
+        renderAdminTable();
+      } else {
+        alert("PIN incorrecto. Usa 2026.");
+      }
+    }
+
+    function renderAdminTable() {
+      const appointments = getAppointments();
+      const tbody = document.getElementById("adminTableBody");
+      const filter = (document.getElementById("searchFilter")?.value || "").toLowerCase();
+
+      const slotOrder = TIME_SLOTS.map(s => `${s.start} - ${s.end}`);
+      appointments.sort((a, b) => slotOrder.indexOf(a.timeSlot) - slotOrder.indexOf(b.timeSlot));
+
+      document.getElementById("statTotal").textContent = `${appointments.length} / 48`;
+      document.getElementById("statA1").textContent = `${appointments.filter(a => String(a.advisor).includes("Mesa 1")).length} citas`;
+      document.getElementById("statA2").textContent = `${appointments.filter(a => String(a.advisor).includes("Mesa 2")).length} citas`;
+      document.getElementById("statA3").textContent = `${appointments.filter(a => String(a.advisor).includes("Mesa 3")).length} citas`;
+
+      const filtered = appointments.filter(a =>
+        String(a.name).toLowerCase().includes(filter) ||
+        String(a.timeSlot).toLowerCase().includes(filter) ||
+        String(a.email).toLowerCase().includes(filter) ||
+        String(a.advisor).toLowerCase().includes(filter)
+      );
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">No hay citas registradas todavía.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 font-bold text-blue-900 whitespace-nowrap">${item.timeSlot}</td>
+          <td class="py-2.5 px-3 font-semibold text-emerald-700 whitespace-nowrap">${item.advisor}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800">${item.name}</td>
+          <td class="py-2.5 px-3 whitespace-nowrap">${item.phone}</td>
+          <td class="py-2.5 px-3 text-slate-600">${item.email}</td>
+          <td class="py-2.5 px-3 text-slate-600">${item.goal}</td>
+          <td class="py-2.5 px-3 text-center no-print">
+            <button type="button" onclick="deleteAppointment('${item.id}')" class="text-red-500 hover:text-red-700 font-bold text-xs px-2 py-1 rounded hover:bg-red-50">Eliminar</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    async function deleteAppointment(id) {
+      const url = getScriptUrl();
+      if (url) {
+        try {
+          await fetch(url, { method: "POST", body: JSON.stringify({ action: "delete", id }) });
+          await refreshFromCloud();
+          return;
+        } catch (e) {}
+      }
+      saveAppointments(getAppointments().filter(a => a.id !== id));
+      renderAdminTable();
+    }
+
+    function exportToCSV() {
+      const appointments = getAppointments();
+      if (appointments.length === 0) {
+        alert("No hay citas para exportar todavía.");
+        return;
+      }
+      const headers = ["Codigo", "Horario (20 min)", "Asesor Asignado", "Nombre Empleado", "Telefono", "Email", "Prioridad IUL", "Fecha Registro"];
+      const rows = appointments.map(a => [
+        `"${a.id}"`, `"${a.timeSlot}"`, `"${a.advisor}"`, `"${a.name}"`, `"${a.phone}"`, `"${a.email}"`, `"${a.goal}"`, `"${a.createdAt}"`
+      ]);
+      const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "Reporte_Citas_Monat_Freedom.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    refreshFromCloud();
+    document.getElementById("badgeCount").textContent = getAppointments().length;
+  </script>
+</body>
+</html>
