@@ -358,6 +358,7 @@
   <script>
     // =========================================================================
     // PEGA AQUÍ LA URL DE TU GOOGLE APPS SCRIPT SI DESEAS DEJARLA FIJA
+    // (Asegúrate de que termine en /exec)
     // =========================================================================
     const DEFAULT_GOOGLE_SCRIPT_URL = "";
 
@@ -378,7 +379,7 @@
       { start: "11:20 AM", end: "11:40 AM" },
       { start: "11:40 AM", end: "12:00 PM" },
       { start: "12:00 PM", end: "12:20 PM" },
-      { start: "12:20 AM", end: "12:40 PM" },
+      { start: "12:20 PM", end: "12:40 PM" },
       { start: "12:40 PM", end: "1:00 PM" },
       { start: "1:00 PM", end: "1:20 PM" },
       { start: "1:20 PM", end: "1:40 PM" },
@@ -711,7 +712,8 @@
         return;
       }
       try {
-        const res = await fetch(url);
+        const fetchUrl = `${url}${url.includes('?') ? '&' : '?'}action=get&_t=${Date.now()}`;
+        const res = await fetch(fetchUrl);
         const data = await res.json();
         if (data && data.appointments) {
           saveAppointments(data.appointments);
@@ -931,53 +933,105 @@
           <td class="py-2.5 px-3 text-slate-600">${item.email}</td>
           <td class="py-2.5 px-3 text-slate-600">${item.goal}</td>
           <td class="py-2.5 px-3 text-center no-print">
-            <button type="button" onclick="deleteAppointment('${item.id}')" class="text-red-500 hover:text-red-700 font-bold text-xs px-2 py-1 rounded hover:bg-red-50">Eliminar</button>
+            <button type="button" onclick="deleteAppointment('${item.id}')" class="text-red-500 hover:text-red-700 font-bold text-xs px-2 py-1 rounded hover:bg-red-50 cursor-pointer">Eliminar</button>
           </td>
         </tr>
       `).join("");
     }
 
     // =========================================================================
-    // FUNCIONES DE SINCRONIZACIÓN CORREGIDAS
+    // FUNCIONES DE SINCRONIZACIÓN Y BORRADO (CON VERIFICACIÓN EN VIVO)
     // =========================================================================
-    async function deleteAppointment(id) {
-      if (!confirm("¿Deseas eliminar esta cita permanentemente? Se borrará de la pantalla y de la hoja de Google Sheets.")) {
+    async function deleteAppointment(appointmentObjOrId) {
+      let id = "";
+      let name = "";
+      let timeSlot = "";
+      let day = "";
+
+      if (typeof appointmentObjOrId === "object" && appointmentObjOrId !== null) {
+        id = appointmentObjOrId.id || "";
+        name = appointmentObjOrId.name || "";
+        timeSlot = appointmentObjOrId.timeSlot || "";
+        day = appointmentObjOrId.day || "";
+      } else {
+        id = String(appointmentObjOrId || "").trim();
+        const found = getAppointments().find(a => String(a.id).trim() === id);
+        if (found) {
+          name = found.name || "";
+          timeSlot = found.timeSlot || "";
+          day = found.day || "";
+        }
+      }
+
+      const confirmMsg = name
+        ? `¿Eliminar la cita de "${name}" (${timeSlot || day}) permanentemente de Google Sheets y del portal?`
+        : `¿Eliminar la cita "${id}" permanentemente de Google Sheets y del portal?`;
+
+      if (!confirm(confirmMsg)) {
         return;
       }
 
-      // 1. Eliminación visual y en almacenamiento local inmediata
-      const prev = getAppointments();
-      const updated = prev.filter(a => String(a.id).trim() !== String(id).trim());
-      saveAppointments(updated);
-      renderAdminTable();
-      renderDays();
-      renderSlots();
-
-      // 2. Notificación a Google Sheets
       const url = getScriptUrl();
-      if (url) {
-        try {
-          const endpoint = `${url}${url.includes('?') ? '&' : '?'}action=delete&id=${encodeURIComponent(id)}&_t=${Date.now()}`;
-          
-          // Se envía la orden a Google Apps Script (probando POST y GET como respaldo)
-          try {
-            await fetch(endpoint, {
-              method: "POST",
-              headers: { "Content-Type": "text/plain;charset=utf-8" },
-              body: JSON.stringify({ action: "delete", id: id })
-            });
-          } catch (postErr) {
-            // Si el navegador bloquea el POST por CORS/redirección, GET lo ejecuta sin preflight
-            await fetch(endpoint, { method: "GET" });
-          }
-        } catch (e) {
-          console.error("Error al sincronizar borrado con Google Sheets:", e);
-        }
+      if (!url) {
+        alert("⚠️ No tienes configurada la URL de Google Apps Script. Por favor ingrésala arriba en el campo 'URL de Conexión Google Sheets'.");
+        return;
+      }
 
-        // Breve espera para que Google Sheets procese el cambio antes de volver a consultar
-        setTimeout(() => {
-          refreshFromCloud();
-        }, 800);
+      // Indicador visual en el botón
+      const btn = event && event.target ? event.target : null;
+      let originalText = "";
+      if (btn && btn.tagName === "BUTTON") {
+        originalText = btn.textContent;
+        btn.textContent = "Borrando...";
+        btn.disabled = true;
+      }
+
+      try {
+        // Usamos GET con parámetros de consulta: 100% libre de errores CORS de redirección 302
+        const params = new URLSearchParams({
+          action: "delete",
+          id: id,
+          name: name,
+          timeSlot: timeSlot,
+          day: day,
+          _t: Date.now().toString()
+        });
+
+        const requestUrl = `${url}${url.includes('?') ? '&' : '?'}${params.toString()}`;
+        const response = await fetch(requestUrl, { method: "GET" });
+        const result = await response.json();
+
+        if (result.status === "deleted") {
+          // Eliminación exitosa confirmada por Google Sheets
+          const current = getAppointments();
+          const updated = current.filter(a => {
+            if (id && String(a.id).trim() === id) return false;
+            if (name && timeSlot && a.name === name && a.timeSlot === timeSlot) return false;
+            return true;
+          });
+          saveAppointments(updated);
+          renderAdminTable();
+          renderDays();
+          renderSlots();
+          alert("✅ Cita eliminada exitosamente de la hoja de Google Sheets y del portal.");
+        } else if (result.status === "not_found") {
+          alert(`⚠️ Google Sheets no encontró esa fila específica en la hoja.\n\nCriterios buscados: Código: "${id}", Empleado: "${name}".\n\nSi ya la borraste a mano en Google Sheets, se retirará de la pantalla ahora.`);
+          const current = getAppointments();
+          saveAppointments(current.filter(a => String(a.id).trim() !== id));
+          renderAdminTable();
+          renderDays();
+          renderSlots();
+        } else {
+          alert("Aviso de Google Sheets: " + (result.message || JSON.stringify(result)));
+        }
+      } catch (err) {
+        console.error("Error al eliminar:", err);
+        alert("❌ Error al comunicarse con Google Sheets: " + err.message + "\n\nVerifica que la URL del script termine en /exec y que en Google Apps Script hayas implementado con 'Quién tiene acceso: Cualquiera'.");
+      } finally {
+        if (btn && btn.tagName === "BUTTON") {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
       }
     }
 
@@ -986,35 +1040,30 @@
         return;
       }
 
-      // 1. Limpieza inmediata local
-      saveAppointments([]);
-      renderAdminTable();
-      renderDays();
-      renderSlots();
-
-      // 2. Limpieza en Google Sheets
       const url = getScriptUrl();
-      if (url) {
-        try {
-          const endpoint = `${url}${url.includes('?') ? '&' : '?'}action=clearAll&_t=${Date.now()}`;
-          try {
-            await fetch(endpoint, {
-              method: "POST",
-              headers: { "Content-Type": "text/plain;charset=utf-8" },
-              body: JSON.stringify({ action: "clearAll" })
-            });
-          } catch (postErr) {
-            await fetch(endpoint, { method: "GET" });
-          }
-        } catch (e) {
-          console.error("Error al limpiar citas en Google Sheets:", e);
-        }
-
-        setTimeout(() => {
-          refreshFromCloud();
-        }, 800);
+      if (!url) {
+        alert("⚠️ No tienes configurada la URL de Google Apps Script.");
+        return;
       }
-      alert("La lista de citas ha sido limpiada por completo.");
+
+      try {
+        const clearUrl = `${url}${url.includes('?') ? '&' : '?'}action=clearAll&_t=${Date.now()}`;
+        const response = await fetch(clearUrl, { method: "GET" });
+        const result = await response.json();
+
+        if (result.status === "cleared") {
+          saveAppointments([]);
+          renderAdminTable();
+          renderDays();
+          renderSlots();
+          alert("✅ Se han borrado todas las citas de Google Sheets y del portal con éxito.");
+        } else {
+          alert("Respuesta de Google Sheets: " + (result.message || JSON.stringify(result)));
+        }
+      } catch (err) {
+        console.error("Error al limpiar citas:", err);
+        alert("❌ Error al contactar con Google Sheets: " + err.message);
+      }
     }
 
     function exportToCSV() {
