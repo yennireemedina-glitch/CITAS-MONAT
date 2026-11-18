@@ -368,7 +368,7 @@
     // =========================================================================
     // PEGA AQUÍ LA URL DE TU GOOGLE APPS SCRIPT SI DESEAS DEJARLA FIJA
     // =========================================================================
-    const DEFAULT_GOOGLE_SCRIPT_URL = "";
+    const DEFAULT_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx95r5wT394xJaIS1HmiA5pTfLqp2-Xhq32d4lokUF5DnoOQXy6iUgzIxeJ-sB7K38/exec";
 
     const EVENT_DAYS = [
       { key: "Lunes 30 de Noviembre", es: "Lunes 30 de Noviembre", en: "Monday, November 30", priority: 1 },
@@ -705,21 +705,26 @@
 
     async function refreshFromCloud() {
       const url = getScriptUrl();
+      const dot = document.getElementById("syncDot");
       if (!url) {
+        if (dot) dot.className = "w-2.5 h-2.5 bg-amber-500 rounded-full";
         renderDays();
         renderSlots();
         return;
       }
       try {
-        const res = await fetch(url);
+        const fetchUrl = `${url}${url.includes('?') ? '&' : '?'}_t=${Date.now()}`;
+        const res = await fetch(fetchUrl);
         const data = await res.json();
         if (data && data.appointments) {
           saveAppointments(data.appointments);
+          if (dot) dot.className = "w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse";
           renderDays();
           renderSlots();
           renderAdminTable();
         }
       } catch (err) {
+        if (dot) dot.className = "w-2.5 h-2.5 bg-red-500 rounded-full";
         renderDays();
         renderSlots();
       }
@@ -734,6 +739,16 @@
         return;
       }
 
+      const scriptUrl = getScriptUrl();
+      if (!scriptUrl) {
+        alert(
+          currentLang === "en"
+            ? "Google Sheets connection URL is not configured yet. Please paste the Apps Script Web App URL (/exec) in DEFAULT_GOOGLE_SCRIPT_URL or in the Admin panel."
+            : "⚠️ Falta configurar la URL de conexión con Google Sheets (/exec). Pégala en DEFAULT_GOOGLE_SCRIPT_URL en el código o en el panel Admin para guardar las citas permanentemente y enviar el email de confirmación."
+        );
+        return;
+      }
+
       const submitBtn = document.getElementById("submitBtn");
       submitBtn.disabled = true;
       submitBtn.textContent = t.submittingBtn;
@@ -743,64 +758,81 @@
       const email = document.getElementById("clientEmail").value.trim();
       const goal = document.getElementById("clientGoal").value;
 
-      const scriptUrl = getScriptUrl();
-      let finalRecord = null;
+      const payload = {
+        action: "create",
+        day: currentSelectedDay,
+        timeSlot: currentSelectedSlot,
+        name,
+        phone,
+        email,
+        goal,
+        lang: currentLang
+      };
 
-      if (scriptUrl) {
+      let result = null;
+      let lastError = null;
+
+      // 1. Intentar envío por POST (con Content-Type text/plain para evitar preflight CORS)
+      try {
+        const response = await fetch(scriptUrl, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+        result = await response.json();
+      } catch (postErr) {
+        lastError = postErr;
+      }
+
+      // 2. Respaldo automático por GET si POST falla por redirección CORS del navegador
+      if (!result || (result.status !== "ok" && result.status !== "full" && result.status !== "error")) {
         try {
-          const response = await fetch(scriptUrl, {
-            method: "POST",
-            body: JSON.stringify({
-              day: currentSelectedDay,
-              timeSlot: currentSelectedSlot,
-              name,
-              phone,
-              email,
-              goal,
-              lang: currentLang
-            })
+          const params = new URLSearchParams({
+            ...payload,
+            _t: Date.now().toString()
           });
-          const result = await response.json();
-          if (result.status === "full") {
-            alert(currentLang === "en" ? "This time slot just filled up. Please pick another one." : "Este horario acaba de llenarse. Por favor selecciona otro bloque.");
-            currentSelectedSlot = null;
-            submitBtn.disabled = false;
-            submitBtn.textContent = t.submitBtn;
-            await refreshFromCloud();
-            return;
-          }
-          if (result.status === "ok") {
-            finalRecord = result.record;
-            await refreshFromCloud();
-          }
-        } catch (e) {}
-      }
-
-      // Respaldo local con la misma rotación global
-      if (!finalRecord) {
-        const appointments = getAppointments();
-        const assignedAdvisor = getNextAdvisorForSlot(currentSelectedDay, currentSelectedSlot);
-        if (!assignedAdvisor) {
-          alert(currentLang === "en" ? "This time slot is full." : "Este horario ya está lleno.");
-          submitBtn.disabled = false;
-          submitBtn.textContent = t.submitBtn;
-          return;
+          const getUrl = `${scriptUrl}${scriptUrl.includes('?') ? '&' : '?'}${params.toString()}`;
+          const getResponse = await fetch(getUrl, { method: "GET" });
+          result = await getResponse.json();
+        } catch (getErr) {
+          lastError = getErr;
         }
-
-        finalRecord = {
-          id: "MONAT-" + Date.now().toString().slice(-5),
-          day: currentSelectedDay,
-          timeSlot: currentSelectedSlot,
-          advisor: assignedAdvisor,
-          name,
-          phone,
-          email,
-          goal,
-          createdAt: new Date().toLocaleString("es-US")
-        };
-        appointments.push(finalRecord);
-        saveAppointments(appointments);
       }
+
+      if (!result) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = t.submitBtn;
+        alert(
+          currentLang === "en"
+            ? "Could not connect to Google Sheets database. Please try again."
+            : "❌ No se pudo conectar con Google Sheets para guardar la cita ni enviar el correo. Verifica la URL (/exec) y tu conexión. Error: " + (lastError ? lastError.message : "Desconocido")
+        );
+        return;
+      }
+
+      if (result.status === "full") {
+        alert(currentLang === "en" ? "This time slot just filled up. Please pick another one." : "Este horario acaba de llenarse. Por favor selecciona otro bloque.");
+        currentSelectedSlot = null;
+        submitBtn.disabled = false;
+        submitBtn.textContent = t.submitBtn;
+        await refreshFromCloud();
+        return;
+      }
+
+      if (result.status !== "ok" || !result.record) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = t.submitBtn;
+        alert("❌ Error en Google Sheets: " + (result.message || JSON.stringify(result)));
+        return;
+      }
+
+      const finalRecord = result.record;
+      const currentList = getAppointments();
+      if (!currentList.some(a => String(a.id).trim() === String(finalRecord.id).trim())) {
+        currentList.push(finalRecord);
+        saveAppointments(currentList);
+      }
+      await refreshFromCloud();
 
       submitBtn.disabled = false;
       submitBtn.textContent = t.submitBtn;
@@ -862,6 +894,7 @@
         document.getElementById("scriptUrlInput").value = getScriptUrl();
         document.getElementById("toggleDay3").checked = localStorage.getItem(DAY3_UNLOCK_KEY) === "true";
         renderAdminTable();
+        refreshFromCloud();
       } else {
         adminView.classList.add("hidden");
         clientView.classList.remove("hidden");
@@ -869,6 +902,7 @@
         btnAdmin.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition flex items-center gap-1";
         renderDays();
         renderSlots();
+        refreshFromCloud();
       }
     }
 
@@ -1086,6 +1120,7 @@
 
     setLanguage("es");
     refreshFromCloud();
+    setInterval(refreshFromCloud, 30000);
     document.getElementById("badgeCount").textContent = getAppointments().length;
   </script>
 </body>
