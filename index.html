@@ -32,7 +32,7 @@
       color: #bfdbfe !important;
     }
   </style>
-</head>
+<script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen py-6 px-4">
 
   <!-- BARRA SUPERIOR: IDIOMA + ACCESO ADMIN -->
@@ -71,16 +71,11 @@
   <!-- ========================================================================= -->
   <div id="clientView" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
     
-    <!-- ENCABEZADO CON LOGOS TRANSPARENTES EN SVG -->
+    <!-- ENCABEZADO CON LOGOS TRANSPARENTES EN SVG[cite: 1, 2, 3] -->
     <div class="bg-gradient-to-b from-white to-slate-50 p-6 border-b border-slate-200 text-center">
       <div class="flex flex-col items-center justify-center mb-4">
-        <!-- Logo MONAT -->
-        <svg class="h-14 w-auto mb-1" viewBox="0 0 240 95" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="120" cy="34" r="28" stroke="#1E73BE" stroke-width="5.5"/>
-          <path d="M120 12C110 22 103 31 103 40C103 49.5 110.5 56 120 56C129.5 56 137 49.5 137 40C137 31 130 22 120 12Z" stroke="#1E73BE" stroke-width="5.5" stroke-linejoin="round"/>
-          <text x="120" y="86" text-anchor="middle" fill="#1E73BE" font-family="Arial, sans-serif" font-weight="bold" font-size="22" letter-spacing="10">MONAT</text>
-          <text x="206" y="75" fill="#1E73BE" font-family="Arial, sans-serif" font-size="10" font-weight="bold">®</text>
-        </svg>
+        <!-- Logo MONAT Original -->
+        <img src="/assets/aistudio/Monat_Logo_Full_Black_50e818f3.jpg" alt="MONAT" class="h-20 w-auto mb-2 object-contain mix-blend-multiply" />
         <span id="txtBadgeEvent" class="bg-blue-900 text-white text-[11px] font-bold px-3.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
           Jornada Exclusiva de Beneficios Financieros
         </span>
@@ -94,7 +89,7 @@
       </p>
 
       <div class="mt-5 pt-4 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-8">
-        <!-- Logo Freedom Insurance Financial -->
+        <!-- Logo Freedom Insurance Financial[cite: 1] -->
         <svg class="h-10 w-auto" viewBox="0 0 430 75" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="0" y="8" width="195" height="44" rx="4" fill="#0B72B9"/>
           <text x="97" y="40" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="bold" font-size="34">freedom</text>
@@ -133,7 +128,7 @@
       </div>
     </div>
 
-    <!-- FORMULARIO DE AGENDAMIENTO -->
+    <!-- FORMULARIO -->
     <form id="bookingForm" class="p-6 space-y-6" onsubmit="registerAppointment(event)">
       <!-- Paso 1: Datos -->
       <div>
@@ -157,13 +152,16 @@
         </div>
       </div>
 
-      <!-- Paso 2: Meta -->
+      <!-- Paso 2: Beneficio Único Disponible -->
       <div>
         <h3 class="text-xs font-bold uppercase tracking-wider text-blue-900 mb-2 flex items-center gap-2">
           <span class="bg-blue-900 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[11px]">2</span>
-          <span id="txtStep2">¿Qué te gustaría lograr con tu estrategia IUL?</span>
+          <span id="txtStep2">Beneficio Disponible</span>
         </h3>
-        <select id="clientGoal" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-700 text-sm bg-white font-medium text-slate-700"></select>
+        <input type="hidden" id="clientGoal" value="IUL (Seguro de Vida Universal Indexado con Beneficios en Vida)" />
+        <div class="w-full px-3.5 py-2.5 border border-slate-300 bg-slate-50 rounded-xl text-sm font-semibold text-blue-950">
+          <span id="txtStep2Title">IUL (Seguro de Vida Universal Indexado con Beneficios en Vida)</span>
+        </div>
       </div>
 
       <!-- Paso 3: Selección de Día -->
@@ -233,7 +231,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- VISTA 2: PORTAL ADMINISTRATIVO PRIVADO (PIN 2026)                        -->
+  <!-- VISTA 2: PORTAL ADMINISTRATIVO PRIVADO (PIN OCULTO)                       -->
   <!-- ========================================================================= -->
   <div id="adminView" class="hidden max-w-6xl mx-auto space-y-4">
     <div id="adminLoginBox" class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-lg border border-slate-200 text-center space-y-4 no-print">
@@ -358,7 +356,6 @@
   <script>
     // =========================================================================
     // PEGA AQUÍ LA URL DE TU GOOGLE APPS SCRIPT SI DESEAS DEJARLA FIJA
-    // (Asegúrate de que termine en /exec)
     // =========================================================================
     const DEFAULT_GOOGLE_SCRIPT_URL = "";
 
@@ -412,13 +409,8 @@
         phName: "Ej. Carolina Gómez",
         lblPhone: "Teléfono Celular *",
         lblEmail: "Correo Electrónico *",
-        step2: "¿Qué te gustaría lograr con tu estrategia IUL?",
-        goals: [
-          "🏦 Crear mi Propio Banco y Retiro Libre de Impuestos (Código 7702)",
-          "🛡️ Protección Familiar + Beneficios en Vida (Enfermedad Crónica/Crítica)",
-          "🎓 Ahorrar para Universidad de los Niños / Pagar la Casa más Rápido",
-          "✨ Conocer todos los beneficios (Aumentar, maximizar y retirar sin penalidad)"
-        ],
+        step2: "Beneficio Disponible",
+        goalValue: "IUL (Seguro de Vida Universal Indexado con Beneficios en Vida)",
         step3Day: "Selecciona el Día de tu Asesoría *",
         priorityNotice: "Prioridad: Lunes 30 Nov y Martes 1 Dic",
         step4Time: "Selecciona tu Horario de 20 Minutos (9:00 AM - 2:20 PM) *",
@@ -461,13 +453,8 @@
         phName: "e.g., Carolina Gomez",
         lblPhone: "Mobile Phone *",
         lblEmail: "Email Address *",
-        step2: "What is your main goal with your IUL strategy?",
-        goals: [
-          "🏦 Build My Own Bank & Tax-Free Retirement (IRS Code 7702)",
-          "🛡️ Family Protection + Living Benefits (Chronic/Critical Illness)",
-          "🎓 Save for Kids' College / Pay Off Home Faster",
-          "✨ Learn all benefits (Flexible contributions, maximize & tax-free loans)"
-        ],
+        step2: "Available Benefit",
+        goalValue: "IUL (Indexed Universal Life with Living Benefits)",
         step3Day: "Select Your Session Day *",
         priorityNotice: "Priority Days: Mon Nov 30 & Tue Dec 1",
         step4Time: "Select Your 20-Minute Time Slot (9:00 AM - 2:20 PM) *",
@@ -568,8 +555,8 @@
       document.getElementById("txtConfirmedEmailNote").textContent = t.confirmedEmailNote;
       document.getElementById("btnBackCalendar").textContent = t.btnBackCalendar;
 
-      const goalSelect = document.getElementById("clientGoal");
-      goalSelect.innerHTML = t.goals.map(g => `<option value="${g}">${g}</option>`).join("");
+      document.getElementById("clientGoal").value = t.goalValue;
+      document.getElementById("txtStep2Title").textContent = t.goalValue;
 
       renderDays();
       renderSlots();
@@ -638,7 +625,8 @@
       });
     }
 
-    // Calcula el siguiente asesor según la rotación de llegada (1. José Gotera -> 2. Yenniree Medina -> 3. Asdrúbal Rodríguez)
+    // Calcula el siguiente asesor según la rotación global de llegada (1. José Gotera -> 2. Yenniree Medina -> 3. Asdrúbal Rodríguez)
+    // Si ese asesor ya tiene cita en ese mismo día y hora, pasa al siguiente libre en la rotación.
     function getNextAdvisorForSlot(dayKey, slotLabel) {
       const appointments = getAppointments();
       const bookedAdvisorsInSlot = appointments
@@ -712,8 +700,7 @@
         return;
       }
       try {
-        const fetchUrl = `${url}${url.includes('?') ? '&' : '?'}action=get&_t=${Date.now()}`;
-        const res = await fetch(fetchUrl);
+        const res = await fetch(url);
         const data = await res.json();
         if (data && data.appointments) {
           saveAppointments(data.appointments);
@@ -753,7 +740,6 @@
           const response = await fetch(scriptUrl, {
             method: "POST",
             body: JSON.stringify({
-              action: "create",
               day: currentSelectedDay,
               timeSlot: currentSelectedSlot,
               name,
@@ -779,7 +765,7 @@
         } catch (e) {}
       }
 
-      // Respaldo local
+      // Respaldo local con la misma rotación global
       if (!finalRecord) {
         const appointments = getAppointments();
         const assignedAdvisor = getNextAdvisorForSlot(currentSelectedDay, currentSelectedSlot);
@@ -843,6 +829,7 @@
 
     function resetFormForNextClient() {
       document.getElementById("bookingForm").reset();
+      document.getElementById("clientGoal").value = I18N[currentLang].goalValue;
       currentSelectedSlot = null;
       document.getElementById("selectedSlotBanner").classList.add("hidden");
       document.getElementById("confirmationScreen").classList.add("hidden");
@@ -933,15 +920,12 @@
           <td class="py-2.5 px-3 text-slate-600">${item.email}</td>
           <td class="py-2.5 px-3 text-slate-600">${item.goal}</td>
           <td class="py-2.5 px-3 text-center no-print">
-            <button type="button" onclick="deleteAppointment('${item.id}')" class="text-red-500 hover:text-red-700 font-bold text-xs px-2 py-1 rounded hover:bg-red-50 cursor-pointer">Eliminar</button>
+            <button type="button" onclick="deleteAppointment('${item.id}')" class="text-red-500 hover:text-red-700 font-bold text-xs px-2 py-1 rounded hover:bg-red-50">Eliminar</button>
           </td>
         </tr>
       `).join("");
     }
 
-    // =========================================================================
-    // FUNCIONES DE SINCRONIZACIÓN Y BORRADO (CON VERIFICACIÓN EN VIVO)
-    // =========================================================================
     async function deleteAppointment(appointmentObjOrId) {
       let id = "";
       let name = "";
@@ -1014,6 +998,8 @@
           renderDays();
           renderSlots();
           alert("✅ Cita eliminada exitosamente de la hoja de Google Sheets y del portal.");
+        } else if (result.status === "ok" && result.appointments) {
+          alert("⚠️ ATENCIÓN: Tu Google Apps Script todavía está ejecutando la versión vieja.\n\nPara solucionarlo en 30 segundos:\n1. Abre tu hoja de Google Sheets y ve a Extensiones > Apps Script.\n2. Pega el código nuevo y dale al icono de Guardar (disquete).\n3. Arriba a la derecha: Implementar > Administrar implementaciones > Clic en el icono del Lápiz (Editar) > en Versión selecciona 'Nueva versión' > clic en Implementar.");
         } else if (result.status === "not_found") {
           alert(`⚠️ Google Sheets no encontró esa fila específica en la hoja.\n\nCriterios buscados: Código: "${id}", Empleado: "${name}".\n\nSi ya la borraste a mano en Google Sheets, se retirará de la pantalla ahora.`);
           const current = getAppointments();
