@@ -74,8 +74,19 @@
     <!-- ENCABEZADO CON LOGOS TRANSPARENTES EN SVG[cite: 1, 2, 3] -->
     <div class="bg-gradient-to-b from-white to-slate-50 p-6 border-b border-slate-200 text-center">
       <div class="flex flex-col items-center justify-center mb-4">
-        <!-- Logo MONAT Original -->
-        <img src="/assets/aistudio/Monat_Logo_Full_Black_50e818f3.jpg" alt="MONAT" class="h-20 w-auto mb-2 object-contain mix-blend-multiply" />
+        <!-- Logo MONAT Original (con respaldo SVG vectorial integrado para Vercel/GitHub) -->
+        <svg id="monatLogoSvg" class="h-20 w-auto mb-2" viewBox="0 0 365 225" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="MONAT">
+          <!-- Emblema Original MONAT -->
+          <path d="M 194 35 C 205 47 210 61 210 74 A 30 30 0 1 1 150 74 C 150 50 168 20 185 18.2 A 58 58 0 1 1 156.4 23" stroke="#1D1819" stroke-width="9.5" stroke-linecap="butt" stroke-linejoin="round" fill="none" />
+          <!-- Tipografía Original M O N Λ T ® -->
+          <path d="M 27 214 L 33.5 173 L 47 202.5 L 60.5 173 L 67 214 L 61.3 214 L 57.3 187 L 47 209.5 L 36.7 187 L 32.7 214 Z" fill="#1D1819" />
+          <circle cx="117.5" cy="194" r="19.5" fill="none" stroke="#1D1819" stroke-width="5.4" />
+          <path d="M 169 214 L 169 173 L 193 201 L 193 174 L 198.2 174 L 198.2 215 L 174.2 187 L 174.2 214 Z" fill="#1D1819" />
+          <path d="M 250 173 L 267.5 214 L 261.5 214 L 250 186 L 238.5 214 L 232.5 214 Z" fill="#1D1819" />
+          <rect x="301" y="174" width="32" height="5.2" fill="#1D1819" />
+          <rect x="314.4" y="174" width="5.2" height="40" fill="#1D1819" />
+          <text x="344" y="185" fill="#1D1819" font-family="Arial, sans-serif" font-size="18" font-weight="600">®</text>
+        </svg>
         <span id="txtBadgeEvent" class="bg-blue-900 text-white text-[11px] font-bold px-3.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
           Jornada Exclusiva de Beneficios Financieros
         </span>
