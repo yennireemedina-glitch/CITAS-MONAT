@@ -31,6 +31,19 @@
     .day-tab-active span {
       color: #bfdbfe !important;
     }
+    .modality-active {
+      background-color: #1e3a8a !important;
+      color: #ffffff !important;
+      border-color: #1e3a8a !important;
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.22);
+    }
+    .modality-active .modality-sub {
+      color: #bfdbfe !important;
+    }
+    .modality-active .modality-pill {
+      background-color: rgba(255, 255, 255, 0.18) !important;
+      color: #ffffff !important;
+    }
   </style>
 <script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen py-6 px-4">
@@ -175,11 +188,37 @@
         </div>
       </div>
 
-      <!-- Paso 3: Selección de Día -->
+      <!-- Paso 3: Modalidad de Reunión (Presencial B&R vs Online Google Meet) -->
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-blue-900 mb-3 flex items-center gap-2">
+          <span class="bg-blue-900 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[11px]">3</span>
+          <span id="txtStep3Modality">Selecciona la Modalidad de tu Reunión *</span>
+        </h3>
+        <input type="hidden" id="clientModality" value="Presencial (B&R)" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button type="button" id="btnModalityInPerson" onclick="selectModality('presencial')" class="p-3.5 rounded-xl border border-slate-300 bg-white hover:border-blue-800 transition text-left flex flex-col justify-between cursor-pointer modality-active">
+            <div class="flex items-center justify-between gap-2">
+              <span id="txtModInPersonTitle" class="text-sm font-extrabold">🏢 Presencial (en B&amp;R)</span>
+              <span id="txtModInPersonBadge" class="modality-pill text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-800">En persona</span>
+            </div>
+            <span id="txtModInPersonDesc" class="modality-sub text-[11px] text-slate-500 mt-1">Reunión presencial en las instalaciones de B&amp;R.</span>
+          </button>
+
+          <button type="button" id="btnModalityOnline" onclick="selectModality('online')" class="p-3.5 rounded-xl border border-slate-300 bg-white hover:border-blue-800 transition text-left flex flex-col justify-between cursor-pointer">
+            <div class="flex items-center justify-between gap-2">
+              <span id="txtModOnlineTitle" class="text-sm font-extrabold">💻 Online (Google Meet)</span>
+              <span id="txtModOnlineBadge" class="modality-pill text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Remoto</span>
+            </div>
+            <span id="txtModOnlineDesc" class="modality-sub text-[11px] text-slate-500 mt-1">Para empleados a distancia. Recibirás tu enlace de Google Meet por email.</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 4: Selección de Día -->
       <div>
         <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
           <h3 class="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-2">
-            <span class="bg-blue-900 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[11px]">3</span>
+            <span class="bg-blue-900 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[11px]">4</span>
             <span id="txtStep3Day">Selecciona el Día de tu Asesoría *</span>
           </h3>
           <span id="txtPriorityNotice" class="text-[11px] bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-full font-semibold">
@@ -189,10 +228,10 @@
 
         <div id="daysGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5"></div>
 
-        <!-- Paso 4: Selección de Hora -->
+        <!-- Paso 5: Selección de Hora -->
         <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
           <h3 class="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-2">
-            <span class="bg-blue-900 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[11px]">4</span>
+            <span class="bg-blue-900 text-white w-5 h-5 rounded-full inline-flex items-center justify-center text-[11px]">5</span>
             <span id="txtStep4Time">Selecciona tu Horario de 20 Minutos (9:00 AM - 2:20 PM) *</span>
           </h3>
           <span id="txtAdvisorsBadge" class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full font-semibold">
@@ -338,6 +377,11 @@
               <option value="Yenniree Medina">Yenniree Medina</option>
               <option value="Asdrúbal Rodríguez">Asdrúbal Rodríguez</option>
             </select>
+            <select id="adminModalityFilter" onchange="renderAdminTable()" class="px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold bg-white">
+              <option value="ALL">🏢/💻 Todas las Modalidades</option>
+              <option value="Presencial">🏢 Presencial (B&amp;R)</option>
+              <option value="Online">💻 Online (Google Meet)</option>
+            </select>
             <input type="text" id="searchFilter" oninput="renderAdminTable()" placeholder="🔍 Buscar empleado, hora, correo..." class="w-full sm:w-64 px-3.5 py-2 border border-slate-300 rounded-xl text-xs">
           </div>
           <span class="text-xs text-slate-500">Copias automáticas a: <strong>ymedina@gofreedomif.com</strong></span>
@@ -349,11 +393,12 @@
               <tr class="bg-slate-100 text-slate-700 border-b border-slate-200 uppercase text-[11px]">
                 <th class="py-3 px-3">Día</th>
                 <th class="py-3 px-3">Hora (20 min)</th>
+                <th class="py-3 px-3">Modalidad / Lugar</th>
                 <th class="py-3 px-3">Asesor Asignado</th>
                 <th class="py-3 px-3">Empleado Monat</th>
                 <th class="py-3 px-3">Teléfono</th>
                 <th class="py-3 px-3">Email</th>
-                <th class="py-3 px-3">Prioridad IUL</th>
+                <th class="py-3 px-3">Beneficio IUL</th>
                 <th class="py-3 px-3 no-print text-center">Acción</th>
               </tr>
             </thead>
@@ -368,7 +413,7 @@
     // =========================================================================
     // PEGA AQUÍ LA URL DE TU GOOGLE APPS SCRIPT SI DESEAS DEJARLA FIJA
     // =========================================================================
-    const DEFAULT_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx95r5wT394xJaIS1HmiA5pTfLqp2-Xhq32d4lokUF5DnoOQXy6iUgzIxeJ-sB7K38/exec";
+    const DEFAULT_GOOGLE_SCRIPT_URL = "";
 
     const EVENT_DAYS = [
       { key: "Lunes 30 de Noviembre", es: "Lunes 30 de Noviembre", en: "Monday, November 30", priority: 1 },
@@ -422,6 +467,13 @@
         lblEmail: "Correo Electrónico *",
         step2: "Beneficio Disponible",
         goalValue: "IUL (Seguro de Vida Universal Indexado con Beneficios en Vida)",
+        step3Modality: "Selecciona la Modalidad de tu Reunión *",
+        modInPersonTitle: "🏢 Presencial (en B&R)",
+        modInPersonBadge: "En persona",
+        modInPersonDesc: "Reunión presencial en las instalaciones de B&R.",
+        modOnlineTitle: "💻 Online (Google Meet)",
+        modOnlineBadge: "Remoto",
+        modOnlineDesc: "Para empleados a distancia. Recibirás tu enlace de Google Meet por email.",
         step3Day: "Selecciona el Día de tu Asesoría *",
         priorityNotice: "Prioridad: Lunes 30 Nov y Martes 1 Dic",
         step4Time: "Selecciona tu Horario de 20 Minutos (9:00 AM - 2:20 PM) *",
@@ -439,13 +491,19 @@
         confirmedTag: "Reserva Confirmada",
         confirmedTitle: "¡Tu cita ha sido registrada con éxito!",
         confirmedEmailNote: "📧 Hemos enviado los detalles a tu correo y a ymedina@gofreedomif.com.",
+        confirmedOnlineNote: "📧 Hemos enviado el enlace de Google Meet a tu correo y a ymedina@gofreedomif.com.",
+        confirmedInPersonNote: "📧 Hemos enviado tu confirmación presencial (ubicación: B&R) a tu correo y a ymedina@gofreedomif.com.",
         btnBackCalendar: "← Registrar otra cita (Volver al calendario)",
         lblCode: "Código de Reserva:",
         lblEmployee: "Empleado:",
+        lblModality: "Modalidad:",
+        lblLocation: "Ubicación:",
+        lblMeetLink: "Enlace Google Meet:",
+        btnJoinMeet: "🎥 Abrir Google Meet",
         lblDay: "Día:",
         lblTime: "Horario (20 min):",
         lblAdvisor: "Asesor Asignado:",
-        lblGoal: "Enfoque IUL:"
+        lblGoal: "Beneficio IUL:"
       },
       en: {
         btnRefresh: "🔄 Refresh",
@@ -466,6 +524,13 @@
         lblEmail: "Email Address *",
         step2: "Available Benefit",
         goalValue: "IUL (Indexed Universal Life with Living Benefits)",
+        step3Modality: "Select Your Meeting Format *",
+        modInPersonTitle: "🏢 In-Person (at B&R)",
+        modInPersonBadge: "On-site",
+        modInPersonDesc: "In-person 1-on-1 meeting taking place at B&R.",
+        modOnlineTitle: "💻 Online (Google Meet)",
+        modOnlineBadge: "Remote",
+        modOnlineDesc: "For remote employees. You will receive your Google Meet link by email.",
         step3Day: "Select Your Session Day *",
         priorityNotice: "Priority Days: Mon Nov 30 & Tue Dec 1",
         step4Time: "Select Your 20-Minute Time Slot (9:00 AM - 2:20 PM) *",
@@ -483,13 +548,19 @@
         confirmedTag: "Booking Confirmed",
         confirmedTitle: "Your appointment has been successfully booked!",
         confirmedEmailNote: "📧 We have sent the confirmation details to your email and ymedina@gofreedomif.com.",
+        confirmedOnlineNote: "📧 We have sent your Google Meet link to your email and ymedina@gofreedomif.com.",
+        confirmedInPersonNote: "📧 We have sent your in-person confirmation (Location: B&R) to your email and ymedina@gofreedomif.com.",
         btnBackCalendar: "← Book another appointment (Back to calendar)",
         lblCode: "Booking Code:",
         lblEmployee: "Employee:",
+        lblModality: "Format:",
+        lblLocation: "Location:",
+        lblMeetLink: "Google Meet Link:",
+        btnJoinMeet: "🎥 Open Google Meet",
         lblDay: "Day:",
         lblTime: "Time Slot (20 min):",
         lblAdvisor: "Assigned Advisor:",
-        lblGoal: "Main Goal:"
+        lblGoal: "Benefit:"
       }
     };
 
@@ -501,6 +572,23 @@
     let currentLang = "es";
     let currentSelectedDay = EVENT_DAYS[0].key;
     let currentSelectedSlot = null;
+    let currentModality = "presencial";
+
+    function selectModality(mode) {
+      currentModality = mode === "online" ? "online" : "presencial";
+      document.getElementById("clientModality").value =
+        currentModality === "online" ? "Online (Google Meet)" : "Presencial (B&R)";
+
+      const btnInPerson = document.getElementById("btnModalityInPerson");
+      const btnOnline = document.getElementById("btnModalityOnline");
+      if (currentModality === "online") {
+        btnOnline.classList.add("modality-active");
+        btnInPerson.classList.remove("modality-active");
+      } else {
+        btnInPerson.classList.add("modality-active");
+        btnOnline.classList.remove("modality-active");
+      }
+    }
 
     function getScriptUrl() {
       return localStorage.getItem(SCRIPT_URL_KEY) || DEFAULT_GOOGLE_SCRIPT_URL;
@@ -555,6 +643,13 @@
       document.getElementById("lblPhone").textContent = t.lblPhone;
       document.getElementById("lblEmail").textContent = t.lblEmail;
       document.getElementById("txtStep2").textContent = t.step2;
+      document.getElementById("txtStep3Modality").textContent = t.step3Modality;
+      document.getElementById("txtModInPersonTitle").textContent = t.modInPersonTitle;
+      document.getElementById("txtModInPersonBadge").textContent = t.modInPersonBadge;
+      document.getElementById("txtModInPersonDesc").textContent = t.modInPersonDesc;
+      document.getElementById("txtModOnlineTitle").textContent = t.modOnlineTitle;
+      document.getElementById("txtModOnlineBadge").textContent = t.modOnlineBadge;
+      document.getElementById("txtModOnlineDesc").textContent = t.modOnlineDesc;
       document.getElementById("txtStep3Day").textContent = t.step3Day;
       document.getElementById("txtPriorityNotice").textContent = t.priorityNotice;
       document.getElementById("txtStep4Time").textContent = t.step4Time;
@@ -757,11 +852,13 @@
       const phone = document.getElementById("clientPhone").value.trim();
       const email = document.getElementById("clientEmail").value.trim();
       const goal = document.getElementById("clientGoal").value;
+      const modality = document.getElementById("clientModality").value;
 
       const payload = {
         action: "create",
         day: currentSelectedDay,
         timeSlot: currentSelectedSlot,
+        modality,
         name,
         phone,
         email,
@@ -838,9 +935,41 @@
       submitBtn.textContent = t.submitBtn;
 
       const dayObj = EVENT_DAYS.find(d => d.key === finalRecord.day) || EVENT_DAYS[0];
+      const isOnline = String(finalRecord.modality || modality).toLowerCase().includes("online");
+      const meetUrl = finalRecord.meetLink && String(finalRecord.meetLink).startsWith("http") ? finalRecord.meetLink : "";
 
       document.getElementById("bookingForm").classList.add("hidden");
       document.getElementById("confirmationScreen").classList.remove("hidden");
+      document.getElementById("txtConfirmedEmailNote").textContent = isOnline
+        ? t.confirmedOnlineNote
+        : t.confirmedInPersonNote;
+
+      const locationRow = isOnline
+        ? `
+          <div class="flex justify-between items-center border-b border-slate-200 pb-2 gap-2">
+            <span class="text-slate-500">${t.lblModality}</span>
+            <strong class="text-emerald-700">💻 Online (Google Meet)</strong>
+          </div>
+          ${meetUrl ? `
+          <div class="border-b border-slate-200 pb-3 pt-1">
+            <span class="text-slate-500 block mb-1.5">${t.lblMeetLink}</span>
+            <a href="${meetUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-sm">
+              ${t.btnJoinMeet}
+            </a>
+            <span class="block text-[11px] text-slate-500 mt-1 break-all text-center">${meetUrl}</span>
+          </div>
+          ` : ''}
+        `
+        : `
+          <div class="flex justify-between border-b border-slate-200 pb-2">
+            <span class="text-slate-500">${t.lblModality}</span>
+            <strong class="text-blue-900">🏢 ${currentLang === "en" ? "In-Person" : "Presencial"}</strong>
+          </div>
+          <div class="flex justify-between border-b border-slate-200 pb-2">
+            <span class="text-slate-500">${t.lblLocation}</span>
+            <strong class="text-blue-900">B&amp;R</strong>
+          </div>
+        `;
 
       document.getElementById("confirmationCard").innerHTML = `
         <div class="flex justify-between border-b border-slate-200 pb-2">
@@ -851,6 +980,7 @@
           <span class="text-slate-500">${t.lblEmployee}</span>
           <strong>${finalRecord.name}</strong>
         </div>
+        ${locationRow}
         <div class="flex justify-between border-b border-slate-200 pb-2">
           <span class="text-slate-500">${t.lblDay}</span>
           <strong class="text-blue-900">${dayObj[currentLang]}</strong>
@@ -873,6 +1003,7 @@
     function resetFormForNextClient() {
       document.getElementById("bookingForm").reset();
       document.getElementById("clientGoal").value = I18N[currentLang].goalValue;
+      selectModality("presencial");
       currentSelectedSlot = null;
       document.getElementById("selectedSlotBanner").classList.add("hidden");
       document.getElementById("confirmationScreen").classList.add("hidden");
@@ -924,6 +1055,7 @@
       const filterText = (document.getElementById("searchFilter")?.value || "").toLowerCase();
       const dayFilter = document.getElementById("adminDayFilter")?.value || "ALL";
       const advisorFilter = document.getElementById("adminAdvisorFilter")?.value || "ALL";
+      const modalityFilter = document.getElementById("adminModalityFilter")?.value || "ALL";
 
       document.getElementById("statTotal").textContent = `${appointments.length} / 144`;
       document.getElementById("statA1").textContent = `${appointments.filter(a => String(a.advisor).includes("Gotera")).length} citas`;
@@ -940,25 +1072,40 @@
       });
 
       const filtered = sorted.filter(a => {
+        const modStr = String(a.modality || "Presencial (B&R)");
         const matchesDay = dayFilter === "ALL" || a.day === dayFilter;
         const matchesAdvisor = advisorFilter === "ALL" || a.advisor === advisorFilter;
+        const matchesModality = modalityFilter === "ALL" || modStr.toLowerCase().includes(modalityFilter.toLowerCase());
         const matchesText =
           String(a.name).toLowerCase().includes(filterText) ||
           String(a.timeSlot).toLowerCase().includes(filterText) ||
           String(a.email).toLowerCase().includes(filterText) ||
-          String(a.advisor).toLowerCase().includes(filterText);
-        return matchesDay && matchesAdvisor && matchesText;
+          String(a.advisor).toLowerCase().includes(filterText) ||
+          modStr.toLowerCase().includes(filterText);
+        return matchesDay && matchesAdvisor && matchesModality && matchesText;
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400">No hay citas registradas para este filtro.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">No hay citas registradas para este filtro.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = filtered.map(item => `
+      tbody.innerHTML = filtered.map(item => {
+        const modText = item.modality || "Presencial (B&R)";
+        const isOnline = String(modText).toLowerCase().includes("online");
+        const hasMeetUrl = item.meetLink && String(item.meetLink).startsWith("http");
+        const modalityCell = isOnline
+          ? `<div class="flex flex-col gap-1">
+               <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 w-fit">💻 Online</span>
+               ${hasMeetUrl ? `<a href="${item.meetLink}" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-blue-700 hover:underline">Abrir Meet ↗</a>` : `<span class="text-[10px] text-slate-400">Google Meet</span>`}
+             </div>`
+          : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-900">🏢 Presencial (B&amp;R)</span>`;
+
+        return `
         <tr class="hover:bg-slate-50">
           <td class="py-2.5 px-3 font-bold text-slate-800 whitespace-nowrap">${item.day || EVENT_DAYS[0].key}</td>
           <td class="py-2.5 px-3 font-bold text-blue-900 whitespace-nowrap">${item.timeSlot}</td>
+          <td class="py-2.5 px-3 whitespace-nowrap">${modalityCell}</td>
           <td class="py-2.5 px-3 font-semibold text-emerald-700 whitespace-nowrap">${item.advisor}</td>
           <td class="py-2.5 px-3 font-bold text-slate-800">${item.name}</td>
           <td class="py-2.5 px-3 whitespace-nowrap">${item.phone}</td>
@@ -968,7 +1115,8 @@
             <button type="button" onclick="deleteAppointment('${item.id}')" class="text-red-500 hover:text-red-700 font-bold text-xs px-2 py-1 rounded hover:bg-red-50">Eliminar</button>
           </td>
         </tr>
-      `).join("");
+      `;
+      }).join("");
     }
 
     async function deleteAppointment(appointmentObjOrId) {
@@ -1103,9 +1251,9 @@
         alert("No hay citas para exportar todavía.");
         return;
       }
-      const headers = ["Codigo", "Dia", "Horario (20 min)", "Asesor Asignado", "Nombre Empleado", "Telefono", "Email", "Prioridad IUL", "Fecha Registro"];
+      const headers = ["Codigo", "Dia", "Horario (20 min)", "Asesor Asignado", "Nombre Empleado", "Telefono", "Email", "Beneficio IUL", "Fecha Registro", "Modalidad", "Ubicacion / Link Meet"];
       const rows = appointments.map(a => [
-        `"${a.id}"`, `"${a.day || ''}"`, `"${a.timeSlot}"`, `"${a.advisor}"`, `"${a.name}"`, `"${a.phone}"`, `"${a.email}"`, `"${a.goal}"`, `"${a.createdAt}"`
+        `"${a.id}"`, `"${a.day || ''}"`, `"${a.timeSlot}"`, `"${a.advisor}"`, `"${a.name}"`, `"${a.phone}"`, `"${a.email}"`, `"${a.goal}"`, `"${a.createdAt}"`, `"${a.modality || 'Presencial (B&R)'}"`, `"${a.meetLink || 'B&R'}"`
       ]);
       const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
