@@ -268,8 +268,20 @@
 
       <div id="confirmationCard" class="max-w-md mx-auto bg-slate-50 p-5 rounded-2xl border border-slate-200 text-left text-sm space-y-2 shadow-sm"></div>
 
+      <div id="calendarActionsBox" class="max-w-md mx-auto bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200 space-y-2.5">
+        <p id="txtCalTitle" class="text-xs font-bold text-emerald-900">📅 Agrega tu cita al calendario (con alerta 10 min antes):</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <a id="btnAddGoogleCal" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-1.5 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition shadow-sm">
+            📅 Google Calendar
+          </a>
+          <button type="button" id="btnDownloadIcs" onclick="downloadAppointmentIcs()" class="inline-flex items-center justify-center gap-1.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold py-2.5 px-3 rounded-xl text-xs transition shadow-sm cursor-pointer">
+            📲 Apple / Outlook (.ics)
+          </button>
+        </div>
+      </div>
+
       <div class="max-w-md mx-auto p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 space-y-2">
-        <p id="txtConfirmedEmailNote" class="font-bold">📧 Hemos enviado los detalles a tu correo y a ymedina@gofreedomif.com.</p>
+        <p id="txtConfirmedEmailNote" class="font-bold">📧 Hemos enviado la confirmación a tu correo y recibirás un recordatorio automático 10 minutos antes de tu cita.</p>
       </div>
 
       <div class="pt-3">
@@ -490,9 +502,12 @@
         submittingBtn: "Registrando tu cita y enviando confirmación...",
         confirmedTag: "Reserva Confirmada",
         confirmedTitle: "¡Tu cita ha sido registrada con éxito!",
-        confirmedEmailNote: "📧 Hemos enviado los detalles a tu correo y a ymedina@gofreedomif.com.",
-        confirmedOnlineNote: "📧 Hemos enviado el enlace de Google Meet a tu correo y a ymedina@gofreedomif.com.",
-        confirmedInPersonNote: "📧 Hemos enviado tu confirmación presencial (ubicación: B&R) a tu correo y a ymedina@gofreedomif.com.",
+        confirmedEmailNote: "📧 Hemos enviado la confirmación y el archivo de calendario a tu correo. Además recibirás un recordatorio automático por email 10 minutos antes.",
+        confirmedOnlineNote: "📧 Hemos enviado el enlace de Google Meet y la invitación de calendario a tu correo, más un recordatorio automático 10 minutos antes.",
+        confirmedInPersonNote: "📧 Hemos enviado tu confirmación presencial (B&R) y la invitación de calendario a tu correo, más un recordatorio automático 10 minutos antes.",
+        calTitle: "📅 Agrega tu cita al calendario (con alerta 10 min antes):",
+        btnGoogleCal: "📅 Google Calendar",
+        btnAppleCal: "📲 Apple / Outlook (.ics)",
         btnBackCalendar: "← Registrar otra cita (Volver al calendario)",
         lblCode: "Código de Reserva:",
         lblEmployee: "Empleado:",
@@ -547,9 +562,12 @@
         submittingBtn: "Booking your session and sending confirmation...",
         confirmedTag: "Booking Confirmed",
         confirmedTitle: "Your appointment has been successfully booked!",
-        confirmedEmailNote: "📧 We have sent the confirmation details to your email and ymedina@gofreedomif.com.",
-        confirmedOnlineNote: "📧 We have sent your Google Meet link to your email and ymedina@gofreedomif.com.",
-        confirmedInPersonNote: "📧 We have sent your in-person confirmation (Location: B&R) to your email and ymedina@gofreedomif.com.",
+        confirmedEmailNote: "📧 We have sent the confirmation and calendar invite to your email, plus an automatic email reminder 10 minutes before your session.",
+        confirmedOnlineNote: "📧 We have sent your Google Meet link and calendar invite to your email, plus an automatic email reminder 10 minutes before your session.",
+        confirmedInPersonNote: "📧 We have sent your in-person confirmation (Location: B&R) and calendar invite to your email, plus an automatic email reminder 10 minutes before.",
+        calTitle: "📅 Add to your calendar (with 10-min phone alert):",
+        btnGoogleCal: "📅 Google Calendar",
+        btnAppleCal: "📲 Apple / Outlook (.ics)",
         btnBackCalendar: "← Book another appointment (Back to calendar)",
         lblCode: "Booking Code:",
         lblEmployee: "Employee:",
@@ -659,6 +677,9 @@
       document.getElementById("txtConfirmedTag").textContent = t.confirmedTag;
       document.getElementById("txtConfirmedTitle").textContent = t.confirmedTitle;
       document.getElementById("txtConfirmedEmailNote").textContent = t.confirmedEmailNote;
+      document.getElementById("txtCalTitle").textContent = t.calTitle;
+      document.getElementById("btnAddGoogleCal").textContent = t.btnGoogleCal;
+      document.getElementById("btnDownloadIcs").textContent = t.btnAppleCal;
       document.getElementById("btnBackCalendar").textContent = t.btnBackCalendar;
 
       document.getElementById("clientGoal").value = t.goalValue;
@@ -998,6 +1019,104 @@
           <strong class="text-slate-800">${finalRecord.goal}</strong>
         </div>
       `;
+
+      lastConfirmedCalendarData = buildClientCalendarData(finalRecord, isOnline, meetUrl);
+      document.getElementById("btnAddGoogleCal").href = lastConfirmedCalendarData.googleCalendarUrl;
+    }
+
+    let lastConfirmedCalendarData = null;
+
+    function parseClientTime24(timeStr) {
+      const m = String(timeStr || "").match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!m) return { h: 9, m: 0 };
+      let h = parseInt(m[1], 10);
+      const min = parseInt(m[2], 10);
+      const period = m[3].toUpperCase();
+      if (period === "PM" && h !== 12) h += 12;
+      if (period === "AM" && h === 12) h = 0;
+      return { h, m: min };
+    }
+
+    function pad2(n) {
+      return n < 10 ? "0" + n : String(n);
+    }
+
+    function buildClientCalendarData(record, isOnline, meetUrl) {
+      const dateMap = {
+        "Lunes 30 de Noviembre": [2026, 11, 30],
+        "Martes 1 de Diciembre": [2026, 12, 1],
+        "Miércoles 2 de Diciembre": [2026, 12, 2]
+      };
+      const [year, month, day] = dateMap[record.day] || [2026, 11, 30];
+      const parts = String(record.timeSlot || "9:00 AM - 9:20 AM").split("-");
+      const startT = parseClientTime24(parts[0]);
+      const endT = parseClientTime24(parts[1] || "9:20 AM");
+
+      const localStart = `${year}${pad2(month)}${pad2(day)}T${pad2(startT.h)}${pad2(startT.m)}00`;
+      const localEnd = `${year}${pad2(month)}${pad2(day)}T${pad2(endT.h)}${pad2(endT.m)}00`;
+
+      // Nov 30 - Dec 2, 2026 in America/New_York is EST (UTC-5)
+      const utcStartObj = new Date(Date.UTC(year, month - 1, day, startT.h + 5, startT.m, 0));
+      const utcEndObj = new Date(Date.UTC(year, month - 1, day, endT.h + 5, endT.m, 0));
+      const formatUtcIcs = (d) =>
+        `${d.getUTCFullYear()}${pad2(d.getUTCMonth() + 1)}${pad2(d.getUTCDate())}T${pad2(d.getUTCHours())}${pad2(d.getUTCMinutes())}00Z`;
+
+      const title = `Cita 1-a-1 MONAT | ${record.advisor}`;
+      const location = isOnline && meetUrl ? meetUrl : "B&R";
+      const details = [
+        `Código: ${record.id}`,
+        `Asesor: ${record.advisor}`,
+        `Modalidad: ${isOnline ? "Online (Google Meet)" : "Presencial (B&R)"}`,
+        isOnline && meetUrl ? `Link Google Meet: ${meetUrl}` : "Ubicación: B&R",
+        `Beneficio: ${record.goal}`
+      ].join("\n");
+
+      const googleCalendarUrl =
+        `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+        `&text=${encodeURIComponent(title)}` +
+        `&dates=${localStart}/${localEnd}` +
+        `&ctz=${encodeURIComponent("America/New_York")}` +
+        `&details=${encodeURIComponent(details)}` +
+        `&location=${encodeURIComponent(location)}`;
+
+      const icsLines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Monat & Freedom Insurance//Citas 1-a-1//ES",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        `UID:${record.id}@citas-monat.vercel.app`,
+        `DTSTAMP:${formatUtcIcs(new Date())}`,
+        `DTSTART:${formatUtcIcs(utcStartObj)}`,
+        `DTEND:${formatUtcIcs(utcEndObj)}`,
+        `SUMMARY:${title}`,
+        `LOCATION:${location}`,
+        `DESCRIPTION:${details.replace(/\n/g, "\\n")}`,
+        ...(isOnline && meetUrl ? [`URL:${meetUrl}`] : []),
+        "BEGIN:VALARM",
+        "TRIGGER:-PT10M",
+        "ACTION:DISPLAY",
+        "DESCRIPTION:Recordatorio: Tu cita 1-a-1 MONAT comienza en 10 minutos",
+        "END:VALARM",
+        "END:VEVENT",
+        "END:VCALENDAR"
+      ].join("\r\n");
+
+      return { googleCalendarUrl, icsContent: icsLines, filename: `cita-monat-${record.id}.ics` };
+    }
+
+    function downloadAppointmentIcs() {
+      if (!lastConfirmedCalendarData) return;
+      const blob = new Blob([lastConfirmedCalendarData.icsContent], { type: "text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = lastConfirmedCalendarData.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
     function resetFormForNextClient() {
